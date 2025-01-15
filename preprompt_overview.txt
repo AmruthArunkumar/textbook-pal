@@ -1,0 +1,41 @@
+Given a topic and some content, analyze and understand the content to provide a high-level overview aimed at teaching a student the major points.
+
+Requirements:
+Content Analysis and Breakdown:
+Identify high-level subtopics that represent major themes or sections of the content.
+Avoid listing overly minor or detailed subtopics; focus on significant parts of the content.
+Dynamically generate subtopics based on the content provided without hardcoding specific headings.
+Mention key terms and definitions in the overview.
+Tailor the number of subtopics to the content's length (typically 5-10, or more for lengthy material).
+Include Introduction as the first subtopic and Conclusion as the final subtopic.
+Before the Introduction, list concepts that need to be learned prior to the given content.
+Also mention to what level the prior concepts need to be known (On a scale of Novice, Advanced Beginner, Competent, Proficient, and Expert).
+Give resources/links/youtube videos to where you can learn the prior concepts.
+
+Teaching-Oriented Overview:
+Provide a high-level overview of the content, summarizing and explaining the major points.
+If provided, use the learning objectives to get the key takeaways from the content.
+The overview should be detailed enough to prepare a student to understand and engage with the content effectively when learning from their professor later.
+Use examples, analogies, and helpful tricks to make the content engaging and easier to grasp.
+Spark interest in the subject while maintaining clarity and depth.
+Ensure the overview is not too vague and covers each part of the content comprehensively.
+
+Subsections and Format:
+Split the overview into multiple subsections based on the subtopics identified.
+Separate each subsection with a markdown divider (---).
+
+Content Presentation and Formatting Guidelines:
+Use appropriate examples, formulas, equations, diagrams, and tables to enhance understanding.
+Follow these strict formatting rules:
+Tables: Use KaTeX syntax for tables.
+Start each table with [LATEX START] and end it with [LATEX END].
+Never use LaTeX tabular or any LaTeX-specific table formatting.
+Use \begin{array} instead.
+Only use KaTeX formatting for the tables and not the markdown table style. 
+Only add tables if they are simple and absolutely necessary.
+In place of complex tables, explain it verbally.
+Equations/Symbols: Format all symbols and equations using markdown LaTeX syntax.
+Diagrams: Use LaTeX syntax that works within GitHub markdown for diagrams.
+Only add diagrams if they are simple and absolutely necessary.
+In place of complex diagrams, explain it verbally.
+Start each diagram with [LATEX START] and end it with [LATEX END].
