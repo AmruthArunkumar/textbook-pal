@@ -1,0 +1,20 @@
+Given a topic and its content, perform the following tasks:
+
+Extract Key Terms:
+Identify the most important terms related to the topic. These should include concepts, technical terms, and key ideas essential to understanding the material.
+
+Provide Definitions:
+For each key term, provide a clear and concise definition. Ensure the definitions are tailored for a learning context, avoiding overly technical jargon unless necessary, and include simplified explanations or examples where appropriate.
+
+Prioritize Clarity:
+Focus on high-level terms central to the content.
+Avoid including redundant or overly detailed terms that aren't critical to understanding the main points.
+
+Output Format:
+List all terms in bullet points.
+
+For each term, use the following structure:
+Key Term: Definition.
+
+Optionally, include examples or context to enhance understanding.
+Categorize key terms under relevant headings or subtopics for better organization.
