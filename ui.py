@@ -34,6 +34,7 @@ content = st.file_uploader("Choose a file", type=(["pdf"]))
 btnOverview = st.button("Generate Overview")
 btnKeyTerms = st.button("Generate Key Terms")
 btnQuestions = st.button("Generate Questions")
+btnExtrapolate = st.button("Extrapolate Mode")
 
 if btnOverview and content is not None:
     path_in = content.name
@@ -218,6 +219,58 @@ elif btnKeyTerms and content is not None:
     
     response = model.generate_content(prompt)
     st.markdown(response.text)
+elif btnExtrapolate and content is not None:
+    path_in = content.name
+    # if folder:
+    #     path_in = folder + "/" + path_in
+    print(path_in)
+
+    with open("parsed.json", "r") as f:
+        data = json.load(f)
+
+    if path_in not in data:
+        with TempFile(content.name, content.getvalue()) as path_in:
+            print(path_in)
+            documents = SimpleDirectoryReader(input_files=[path_in], file_extractor=file_extractor).load_data()
+        content = ""
+        for doc in documents:
+            content += doc.text
+        print("Done LlamaParse Processing")
+        data[path_in] = content
+        json_obj = json.dumps(data, indent=4)
+        with open("parsed.json", "w") as f:
+            f.write(json_obj)
+    else:
+        content = data[path_in]
+        print("Skipped LlamaParse. Retrieved from History")
+
+    if not objectives:
+        objectives = "N/A"
+    with open("preprompt_extrapolate.txt", "r", encoding="utf-8") as f:
+        preprompt = f.read()
+
+    prompt = (
+        f'{preprompt}\n' +
+        f'topic: {topic}\n' +
+        f'learning objectives: {objectives}\n' +
+        f'content: {content}\n'
+    )
+    
+    response = model.generate_content(prompt)
+
+    tables = re.findall(r'\[LATEX START\](.*?)\[LATEX END\]', response.text, re.DOTALL)
+    text = re.findall(r'\[LATEX END\](.*?)\[LATEX START\]', response.text, re.DOTALL)
+    print(tables)
+    if tables:
+        st.markdown((response.text.split("[LATEX START]")[0]).strip(" \r\n"))
+        for pair in zip(tables, text):
+            st.latex(pair[0].strip(" \r\n"))
+            st.markdown(pair[1].strip(" \r\n"))
+        if len(tables) - len(text) != 0:
+            st.latex(tables[-1].strip(" \r\n"))
+        st.markdown((response.text.split("[LATEX END]")[-1]).strip(" \r\n"))
+    else:
+        st.markdown(response.text)
     
 else:
     path_in = None
