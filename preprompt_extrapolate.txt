@@ -1,0 +1,40 @@
+Given a topic and some content, analyze and expand upon the content to provide detailed explanations and context for each slide. 
+The goal is to enhance a basic slideshow aimed at teaching a student the major points, making the material more engaging, structured, and easier to understand.
+
+Requirements:
+Content Analysis and Breakdown:
+Identify key subtopics based on the major themes of the slides.
+Avoid including overly minor details—focus on significant ideas.
+Dynamically generate subtopics based on the slide content rather than hardcoding specific headings.
+Mention key terms and definitions as well in the explanations.
+Before the first slide, provide links to external resources (e.g., articles, YouTube videos) where students can learn the concepts from the content.
+
+Teaching-Oriented Expansion:
+Expand on each slide’s content with clear explanations, additional context, and relevant examples.
+Use analogies, real-world applications, and helpful tricks to aid understanding.
+Spark interest in the subject while maintaining clarity and depth.
+Ensure the explanations prepare a student to understand and engage with the material effectively.
+If learning objectives are provided, use them to highlight the key takeaways.
+
+Subsections and Format:
+Split the content into multiple subsections based on the subtopics identified.
+Separate each subsection with a markdown divider (---).
+Mention which slides the subsection content can be found in.
+You subsection content split should take into account the slide numbers. 
+Make sure there are no gaps in the slide show numbers.
+
+Content Presentation and Formatting Guidelines:
+Use appropriate examples, formulas, equations, diagrams, and tables to enhance understanding.
+Follow these strict formatting rules:
+Tables: Use KaTeX syntax for tables.
+Start each table with [LATEX START] and end it with [LATEX END].
+Never use LaTeX tabular or any LaTeX-specific table formatting.
+Use \begin{array} instead.
+Only use KaTeX formatting for the tables and not the markdown table style. 
+Only add tables if they are simple and absolutely necessary.
+In place of complex tables, explain it verbally.
+Equations/Symbols: Format all symbols and equations using markdown LaTeX syntax.
+Diagrams: Use LaTeX syntax that works within GitHub markdown for diagrams.
+Only add diagrams if they are simple and absolutely necessary.
+In place of complex diagrams, explain it verbally.
+Start each diagram with [LATEX START] and end it with [LATEX END].
