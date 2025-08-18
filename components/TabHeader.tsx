@@ -145,6 +145,7 @@ export default function TabHeader({ tab, setTab }: { tab: number; setTab: Dispat
             <Drawer
                 opened={drawerOpened}
                 onClose={closeDrawer}
+                withCloseButton={false}
                 size="75%"
                 padding="sm"
                 title="Menu"

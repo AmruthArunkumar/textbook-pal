@@ -26,7 +26,7 @@ export default function Dashboard() {
                 router.push("/");
             }
         }
-    }, [loading, checkedSession, user, userSession, router]);
+    }, [loading, checkedSession, user, userSession]);
 
     const tabToTitle = (tab: number): string => {
         switch (tab) {

@@ -99,9 +99,9 @@ export default function Header() {
             <Drawer
                 opened={drawerOpened}
                 onClose={closeDrawer}
-                size="100%"
+                size="75%"
                 padding="sm"
-                title="Navigation"
+                title="Menu"
                 hiddenFrom="sm"
                 zIndex={1000}
             >
