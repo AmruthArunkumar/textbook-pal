@@ -43,10 +43,11 @@ export default function Header() {
     };
 
     const handleLogOutClick = async () => {
+        closeDrawer();
         await signOut(auth);
         sessionStorage.removeItem("user");
         setUserSession(null);
-        router.push("/")
+        router.push("/");
     };
 
     const handleSignUpClick = () => {
@@ -63,7 +64,6 @@ export default function Header() {
                     right: "8px",
                     height: "60px",
                     borderBottom: "2px solid light-dark(#DDDDDD, #444444)",
-                    zIndex: 1000,
                 }}
             >
                 <Group justify="right" h="100%">
@@ -99,16 +99,14 @@ export default function Header() {
             <Drawer
                 opened={drawerOpened}
                 onClose={closeDrawer}
+                withCloseButton={false}
                 size="75%"
                 padding="sm"
-                title="Menu"
                 hiddenFrom="sm"
                 zIndex={1000}
             >
-                <Divider my="sm" />
-
                 {!user && userSession !== "true" ? (
-                    <Group justify="center" grow pb="xl" px="md">
+                    <Group justify="center" grow pb="xl" px="md" pt={"16px"}>
                         <Button variant="default" onClick={handleLogInClick}>
                             Log in
                         </Button>
@@ -117,7 +115,7 @@ export default function Header() {
                         </Button>
                     </Group>
                 ) : (
-                    <Group justify="center" grow pb="xl" px="md">
+                    <Group justify="center" grow pb="xl" px="md" pt={"16px"}>
                         <Button variant="default" onClick={handleLogOutClick}>
                             Log Out
                         </Button>

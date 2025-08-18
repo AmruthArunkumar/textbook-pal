@@ -65,7 +65,6 @@ export default function TabHeader({ tab, setTab }: { tab: number; setTab: Dispat
                     right: "8px",
                     height: "60px",
                     borderBottom: "2px solid light-dark(#DDDDDD, #444444)",
-                    zIndex: 1000,
                     display: "flex",
                     justifyContent: "space-between",
                 }}
@@ -86,21 +85,18 @@ export default function TabHeader({ tab, setTab }: { tab: number; setTab: Dispat
                             >
                                 <Tabs.List>
                                     <Tabs.Tab
-                                        // onClick={() => setTab(0)}
                                         value="documents"
                                         leftSection={<UploadFileOutlined />}
                                     >
                                         Documents
                                     </Tabs.Tab>
                                     <Tabs.Tab
-                                        // onClick={() => setTab(1)}
                                         value="chatbot"
                                         leftSection={<ForumOutlined />}
                                     >
                                         Q&A Chatbot
                                     </Tabs.Tab>
                                     <Tabs.Tab
-                                        // onClick={() => setTab(2)}
                                         value="study-tools"
                                         leftSection={<StyleOutlined />}
                                     >
@@ -148,13 +144,11 @@ export default function TabHeader({ tab, setTab }: { tab: number; setTab: Dispat
                 withCloseButton={false}
                 size="75%"
                 padding="sm"
-                title="Menu"
                 hiddenFrom="sm"
                 zIndex={1000}
             >
-                <Divider my="sm" />
 
-                <Group justify="center" grow px="md">
+                <Group justify="center" grow px="md" pt={"16px"}>
                     <Button.Group orientation="vertical">
                         <Button
                             variant={tab == 0 ? "light" : "default"}
@@ -189,7 +183,7 @@ export default function TabHeader({ tab, setTab }: { tab: number; setTab: Dispat
                     </Button.Group>
                 </Group>
 
-                <Divider my="sm" />
+                <Divider my="lg" />
 
                 {!user && userSession !== "true" ? (
                     <Group justify="center" grow pb="xl" px="md">
