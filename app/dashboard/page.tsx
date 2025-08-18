@@ -9,22 +9,42 @@ import { useAuthState } from "react-firebase-hooks/auth";
 export default function Dashboard() {
     const [tab, setTab] = useState<number>(0);
 
-    const [user] = useAuthState(auth);
     const [userSession, setUserSession] = useState<string | null>(null);
+    const [checkedSession, setCheckedSession] = useState(false);
     const router = useRouter();
+
+    const [user, loading] = useAuthState(auth); 
 
     useEffect(() => {
         setUserSession(sessionStorage.getItem("user"));
+        setCheckedSession(true);
     }, []);
 
-    if (!user && !userSession) {
-        router.push("/");
+    useEffect(() => {
+        if (!loading && checkedSession) {
+            if (!user && userSession !== "true") {
+                router.push("/");
+            }
+        }
+    }, [loading, checkedSession, user, userSession, router]);
+
+    const tabToTitle = (tab: number): string => {
+        switch (tab) {
+            case 0:
+                return "Documents"
+            case 1:
+                return "Q&A Chatbot"
+            case 2:
+                return "Study Tools"
+            default:
+                return tab.toString()
+        }
     }
 
     return (
         <Box style={{ width: "100vw", height: "100vh", display: "flex", flexDirection: "column" }}>
-            <TabHeader setTab={setTab} />
-            <main style={{ flex: 1, display: "flex", margin: "8px" }}>Content: {tab}</main>
+            <TabHeader tab={tab} setTab={setTab} />
+            <main style={{ flex: 1, display: "flex", margin: "8px" }}>Content: {tabToTitle(tab)}</main>
         </Box>
     );
 }

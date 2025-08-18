@@ -75,7 +75,7 @@ export default function Header() {
                         {mounted &&
                             (computedColorScheme === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />)}
                     </ActionIcon>
-                    {!user && !userSession ? (
+                    {!user && userSession !== "true" ? (
                         <Group visibleFrom="xs">
                             <Button variant="default" onClick={handleLogInClick}>
                                 Log in

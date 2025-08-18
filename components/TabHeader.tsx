@@ -23,7 +23,7 @@ import { signOut } from "firebase/auth";
 import { auth } from "@/app/firebase/config";
 import { ForumOutlined, StyleOutlined, UploadFileOutlined } from "@mui/icons-material";
 
-export default function TabHeader({ setTab }: { setTab: Dispatch<SetStateAction<number>> }) {
+export default function TabHeader({ tab, setTab }: { tab: number; setTab: Dispatch<SetStateAction<number>> }) {
     const [drawerOpened, { toggle: toggleDrawer, close: closeDrawer }] = useDisclosure(false);
 
     const { setColorScheme } = useMantineColorScheme();
@@ -48,7 +48,7 @@ export default function TabHeader({ setTab }: { setTab: Dispatch<SetStateAction<
         await signOut(auth);
         sessionStorage.removeItem("user");
         setUserSession(null);
-        router.push("/")
+        router.push("/");
     };
 
     const handleSignUpClick = () => {
@@ -72,25 +72,35 @@ export default function TabHeader({ setTab }: { setTab: Dispatch<SetStateAction<
             >
                 <Group justify="left" h="100%">
                     {(user || userSession) && (
-                        <Box style={{ height: "60px", display: "flex", alignItems: "flex-end" }}>
-                            <Tabs color="pale-green" radius="xs" defaultValue="documents" style={{ marginTop: "11px" }}>
+                        <Box style={{ height: "60px", display: "flex", alignItems: "flex-end" }} visibleFrom="sm">
+                            <Tabs
+                                color="pale-green"
+                                radius="xs"
+                                defaultValue="documents"
+                                value={tab === 0 ? "documents" : tab === 1 ? "chatbot" : "study-tools"}
+                                onChange={(value) => {
+                                    if (value === "documents") setTab(0);
+                                    if (value === "chatbot") setTab(1);
+                                    if (value === "study-tools") setTab(2);
+                                }}
+                            >
                                 <Tabs.List>
                                     <Tabs.Tab
-                                        onClick={() => setTab(0)}
+                                        // onClick={() => setTab(0)}
                                         value="documents"
                                         leftSection={<UploadFileOutlined />}
                                     >
                                         Documents
                                     </Tabs.Tab>
                                     <Tabs.Tab
-                                        onClick={() => setTab(1)}
+                                        // onClick={() => setTab(1)}
                                         value="chatbot"
                                         leftSection={<ForumOutlined />}
                                     >
                                         Q&A Chatbot
                                     </Tabs.Tab>
                                     <Tabs.Tab
-                                        onClick={() => setTab(2)}
+                                        // onClick={() => setTab(2)}
                                         value="study-tools"
                                         leftSection={<StyleOutlined />}
                                     >
@@ -101,6 +111,7 @@ export default function TabHeader({ setTab }: { setTab: Dispatch<SetStateAction<
                         </Box>
                     )}
                 </Group>
+
                 <Group justify="right" h="100%">
                     <ActionIcon
                         variant="default"
@@ -111,7 +122,7 @@ export default function TabHeader({ setTab }: { setTab: Dispatch<SetStateAction<
                             (computedColorScheme === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />)}
                     </ActionIcon>
                     {!user && !userSession ? (
-                        <Group visibleFrom="xs">
+                        <Group visibleFrom="sm">
                             <Button variant="default" onClick={handleLogInClick}>
                                 Log in
                             </Button>
@@ -120,26 +131,63 @@ export default function TabHeader({ setTab }: { setTab: Dispatch<SetStateAction<
                             </Button>
                         </Group>
                     ) : (
-                        <Group visibleFrom="xs">
+                        <Group visibleFrom="sm">
                             <Button variant="default" onClick={handleLogOutClick}>
                                 Log Out
                             </Button>
                         </Group>
                     )}
 
-                    <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="xs" />
+                    <Burger opened={false} onClick={toggleDrawer} hiddenFrom="sm" />
                 </Group>
             </header>
 
             <Drawer
                 opened={drawerOpened}
                 onClose={closeDrawer}
-                size="100%"
+                size="75%"
                 padding="sm"
-                title="Navigation"
+                title="Menu"
                 hiddenFrom="sm"
                 zIndex={1000}
             >
+                <Divider my="sm" />
+
+                <Group justify="center" grow px="md">
+                    <Button.Group orientation="vertical">
+                        <Button
+                            variant={tab == 0 ? "light" : "default"}
+                            color={"pale-green"}
+                            onClick={() => {
+                                setTab(0);
+                                closeDrawer();
+                            }}
+                        >
+                            Documents
+                        </Button>
+                        <Button
+                            variant={tab == 1 ? "light" : "default"}
+                            color={"pale-green"}
+                            onClick={() => {
+                                setTab(1);
+                                closeDrawer();
+                            }}
+                        >
+                            Q&A Chatbot
+                        </Button>
+                        <Button
+                            variant={tab == 2 ? "light" : "default"}
+                            color={"pale-green"}
+                            onClick={() => {
+                                setTab(2);
+                                closeDrawer();
+                            }}
+                        >
+                            Study Tools
+                        </Button>
+                    </Button.Group>
+                </Group>
+
                 <Divider my="sm" />
 
                 {!user && userSession !== "true" ? (
