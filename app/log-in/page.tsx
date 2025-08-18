@@ -1,49 +1,32 @@
 "use client";
 import { Dispatch, SetStateAction, useState } from "react";
-import { Button, Text, TextInput, Stack, PasswordInput, Notification } from "@mantine/core";
+import { Button, Text, TextInput, Stack, PasswordInput, Box } from "@mantine/core";
 import CancelIcon from "@mui/icons-material/Cancel";
-import { EmailAndPasswordActionHook, useSignInWithEmailAndPassword } from "react-firebase-hooks/auth";
 import { auth } from "@/app/firebase/config";
-import { UserCredential } from "firebase/auth";
+import { signInWithEmailAndPassword, UserCredential } from "firebase/auth";
 import { useRouter } from "next/navigation";
-import { notifications, showNotification } from "@mantine/notifications";
+import { showNotification } from "@mantine/notifications";
+import Header from "@/components/Header";
+import { FirebaseError } from "firebase/app";
 
 export default function LogIn() {
     const [email, setEmail]: [string, Dispatch<SetStateAction<string>>] = useState<string>("");
     const [password, setPassword]: [string, Dispatch<SetStateAction<string>>] = useState<string>("");
 
-    const [signInWithEmailAndPassword]: EmailAndPasswordActionHook = useSignInWithEmailAndPassword(auth);
-
     const router = useRouter();
 
     const handleLogIn = async () => {
         try {
-            const res: UserCredential | undefined = await signInWithEmailAndPassword(email, password);
+            const res: UserCredential = await signInWithEmailAndPassword(auth, email, password);
             console.log({ res });
-            if (!res) {
-                setPassword("");
-                notifications.show({
-                    title: "Bummer!",
-                    message: "Something went wrong — check your credentials.",
-                    radius: "xs",
-                    color: "red",
-                    style: {
-                        maxWidth: "40vw",
-                        marginLeft: "auto",
-                        marginRight: "auto",
-                    },
-                    icon: <CancelIcon />,
-                });
-                return;
-            }
             sessionStorage.setItem("user", "true");
             setEmail("");
             setPassword("");
-            router.push("/");
+            router.push("/dashboard");
         } catch (e) {
             showNotification({
-                title: "Bummer!",
-                message: "Something went wrong — check your credentials.",
+                title: "Something went wrong",
+                message: e instanceof FirebaseError ? e.message : "Please Try Again Later",
                 color: "red",
                 radius: "xs",
                 style: {
@@ -53,13 +36,13 @@ export default function LogIn() {
                 },
                 icon: <CancelIcon />,
             });
-            console.error(e);
         }
     };
 
     return (
-        <>
-            <Stack h={"100vh"} bg="var(--mantine-color-body)" align="stretch" justify="center" gap="sm">
+        <Box style={{ width: "100vw", height: "100vh", display: "flex", flexDirection: "column" }}>
+            <Header />
+            <Stack flex={1} style={{overflow: "auto"}} bg="var(--mantine-color-body)" align="stretch" justify="center" gap="sm">
                 <Text ta="center" size="xl" fw={700} w={{ base: "90%", sm: "60%", md: "40%", lg: "30%" }} mx="auto">
                     Log In
                 </Text>
@@ -96,6 +79,6 @@ export default function LogIn() {
                     Log In
                 </Button>
             </Stack>
-        </>
+        </Box>
     );
 }
