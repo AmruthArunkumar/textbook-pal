@@ -113,22 +113,23 @@ export default function TabHeader({ tab, setTab }: { tab: number; setTab: Dispat
                         variant="default"
                         size="lg"
                         onClick={() => setColorScheme(computedColorScheme === "light" ? "dark" : "light")}
+                        radius={"xs"}
                     >
                         {mounted &&
                             (computedColorScheme === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />)}
                     </ActionIcon>
                     {!user && !userSession ? (
                         <Group visibleFrom="sm">
-                            <Button variant="default" onClick={handleLogInClick}>
+                            <Button variant="default" onClick={handleLogInClick} radius={"xs"}>
                                 Log in
                             </Button>
-                            <Button onClick={handleSignUpClick} color="pale-green">
+                            <Button onClick={handleSignUpClick} color="pale-green" radius={"xs"}>
                                 Sign up
                             </Button>
                         </Group>
                     ) : (
                         <Group visibleFrom="sm">
-                            <Button variant="default" onClick={handleLogOutClick}>
+                            <Button variant="default" onClick={handleLogOutClick} radius={"xs"}>
                                 Log Out
                             </Button>
                         </Group>
@@ -157,6 +158,7 @@ export default function TabHeader({ tab, setTab }: { tab: number; setTab: Dispat
                                 setTab(0);
                                 closeDrawer();
                             }}
+                            radius={"xs"}
                         >
                             Documents
                         </Button>
@@ -167,6 +169,7 @@ export default function TabHeader({ tab, setTab }: { tab: number; setTab: Dispat
                                 setTab(1);
                                 closeDrawer();
                             }}
+                            radius={"xs"}
                         >
                             Q&A Chatbot
                         </Button>
@@ -177,6 +180,7 @@ export default function TabHeader({ tab, setTab }: { tab: number; setTab: Dispat
                                 setTab(2);
                                 closeDrawer();
                             }}
+                            radius={"xs"}
                         >
                             Study Tools
                         </Button>
@@ -187,16 +191,16 @@ export default function TabHeader({ tab, setTab }: { tab: number; setTab: Dispat
 
                 {!user && userSession !== "true" ? (
                     <Group justify="center" grow pb="xl" px="md">
-                        <Button variant="default" onClick={handleLogInClick}>
+                        <Button variant="default" onClick={handleLogInClick} radius={"xs"}>
                             Log in
                         </Button>
-                        <Button onClick={handleSignUpClick} color="pale-green">
+                        <Button onClick={handleSignUpClick} color="pale-green" radius={"xs"}>
                             Sign up
                         </Button>
                     </Group>
                 ) : (
                     <Group justify="center" grow pb="xl" px="md">
-                        <Button variant="default" onClick={handleLogOutClick}>
+                        <Button variant="default" onClick={handleLogOutClick} radius={"xs"}>
                             Log Out
                         </Button>
                     </Group>

@@ -71,28 +71,29 @@ export default function Header() {
                         variant="default"
                         size="lg"
                         onClick={() => setColorScheme(computedColorScheme === "light" ? "dark" : "light")}
+                        radius={"xs"}
                     >
                         {mounted &&
                             (computedColorScheme === "light" ? <DarkModeOutlinedIcon /> : <LightModeOutlinedIcon />)}
                     </ActionIcon>
                     {!user && userSession !== "true" ? (
-                        <Group visibleFrom="xs">
-                            <Button variant="default" onClick={handleLogInClick}>
+                        <Group visibleFrom="sm">
+                            <Button variant="default" onClick={handleLogInClick} radius={"sm"}>
                                 Log in
                             </Button>
-                            <Button onClick={handleSignUpClick} color="pale-green">
+                            <Button onClick={handleSignUpClick} color="pale-green" radius={"sm"}>
                                 Sign up
                             </Button>
                         </Group>
                     ) : (
-                        <Group visibleFrom="xs">
-                            <Button variant="default" onClick={handleLogOutClick}>
+                        <Group visibleFrom="sm">
+                            <Button variant="default" onClick={handleLogOutClick} radius={"sm"}>
                                 Log Out
                             </Button>
                         </Group>
                     )}
 
-                    <Burger opened={drawerOpened} onClick={toggleDrawer} hiddenFrom="xs" />
+                    <Burger opened={false} onClick={toggleDrawer} hiddenFrom="sm" />
                 </Group>
             </header>
 
@@ -107,16 +108,16 @@ export default function Header() {
             >
                 {!user && userSession !== "true" ? (
                     <Group justify="center" grow pb="xl" px="md" pt={"16px"}>
-                        <Button variant="default" onClick={handleLogInClick}>
+                        <Button variant="default" onClick={handleLogInClick} radius={"sm"}>
                             Log in
                         </Button>
-                        <Button onClick={handleSignUpClick} color="pale-green">
+                        <Button onClick={handleSignUpClick} color="pale-green" radius={"sm"}>
                             Sign up
                         </Button>
                     </Group>
                 ) : (
                     <Group justify="center" grow pb="xl" px="md" pt={"16px"}>
-                        <Button variant="default" onClick={handleLogOutClick}>
+                        <Button variant="default" onClick={handleLogOutClick} radius={"sm"}>
                             Log Out
                         </Button>
                     </Group>
