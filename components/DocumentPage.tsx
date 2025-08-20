@@ -12,15 +12,21 @@ import { app, auth } from "@/app/firebase/config";
 import { useRouter } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { useCollection } from "react-firebase-hooks/firestore";
-import { getFirestore, collection, getDocs, doc, getDoc, addDoc } from "firebase/firestore";
+import { getFirestore, collection, getDocs, doc, getDoc, addDoc, deleteDoc, DocumentData } from "firebase/firestore";
 import { showNotification } from "@mantine/notifications";
+
+interface Note {
+    id: string;
+    embedding: number[];
+    compressedText: string;
+}
 
 export default function DocumentPage() {
     const [user, loading] = useAuthState(auth);
     const db = getFirestore(app);
 
     const [file, setFile] = useState<File | null>(null);
-    const [notes, setNotes] = useState<string[]>([]);
+    const [notes, setNotes] = useState<{ id: string; text: string }[]>([]);
 
     useEffect(() => {
         handleGetAllDocuments();
@@ -32,7 +38,7 @@ export default function DocumentPage() {
         try {
             const docRef = await addDoc(notesRef, { compressedText: file?.name ?? "N/A", embedding: [1, 2, 3] });
             console.log("Document written with ID: ", docRef.id);
-            setNotes([...notes, file?.name ?? "N/A"]);
+            setNotes([...notes, { text: file?.name ?? "N/A", id: docRef.id }]);
             setFile(null);
             showNotification({
                 title: "Success!",
@@ -63,17 +69,53 @@ export default function DocumentPage() {
         }
     };
 
+    const handleDeleteDocument = async (id: string) => {
+        if (!user) return;
+        console.log(id)
+        const notesDoc = doc(db, "Users", user.uid, "Notes", id);
+        try {
+            const docRef = await deleteDoc(notesDoc);
+            console.log("Document deleted");
+            setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id));
+            showNotification({
+                title: "Success!",
+                message: "Document Removed Successfully",
+                color: "green",
+                radius: "xs",
+                style: {
+                    maxWidth: "40vw",
+                    marginLeft: "auto",
+                    marginRight: "auto",
+                },
+                icon: <CheckIcon />,
+            });
+        } catch (e) {
+            console.error("Error Removing Document: ", e);
+            showNotification({
+                title: "Uh Oh!",
+                message: "Error Removing Document",
+                color: "red",
+                radius: "xs",
+                style: {
+                    maxWidth: "40vw",
+                    marginLeft: "auto",
+                    marginRight: "auto",
+                },
+                icon: <CloseIcon />,
+            });
+        }
+    };
+
     const handleGetAllDocuments = async () => {
         if (!user) return;
         const notesRef = collection(db, "Users", user.uid, "Notes");
         const snapshot = await getDocs(notesRef);
-        const allNotes: string[] = [];
+        const allNotes: { id: string; text: string }[] = [];
         snapshot.forEach((doc) => {
-            const data = doc.data();
-            console.log(data.compressedText);
-            allNotes.push(data.compressedText);
+            const data: Note = doc.data() as Note;
+            allNotes.push({ text: data.compressedText, id: doc.id });
         });
-
+        console.log(allNotes)
         setNotes(allNotes);
     };
 
@@ -104,12 +146,14 @@ export default function DocumentPage() {
                     </Button>
                 </Group>
             )}
-            <SimpleGrid cols={{ base: 2, sm: 3, md: 4, lg: 5, xl: 6 }}>
+            <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 4, lg: 5, xl: 6 }} spacing="md" style={{ width: "100%" }}>
                 {notes.map((n, i) => {
                     return (
                         <Paper withBorder shadow="sm" radius="md" p="16px" key={i} display={"flex"}>
                             <PictureAsPdfIcon sx={{ color: "#E57373", mr: "16px" }} />
-                            <Text flex={1}>{n}</Text>
+                            <Text flex={1} truncate="end">
+                                {n.text.replace(/\.pdf$/i, "")}
+                            </Text>
                             <Menu shadow="md" width={200}>
                                 <Menu.Target>
                                     <ActionIcon variant="subtle" color="gray">
@@ -118,7 +162,12 @@ export default function DocumentPage() {
                                 </Menu.Target>
 
                                 <Menu.Dropdown>
-                                    <Menu.Item color="red" onClick={() => {}}>
+                                    <Menu.Item
+                                        color="red"
+                                        onClick={() => {
+                                            handleDeleteDocument(n.id);
+                                        }}
+                                    >
                                         Delete
                                     </Menu.Item>
                                 </Menu.Dropdown>

@@ -44,7 +44,9 @@ export default function Dashboard() {
 
     return (
         <Box style={{ width: "100vw", height: "100vh", display: "flex", flexDirection: "column" }}>
-            <TabHeader tab={tab} setTab={setTab} />
+            <Box style={{ height: "60px" }}>
+                <TabHeader tab={tab} setTab={setTab} />
+            </Box>
             <Box flex={1} display={"flex"} m={"8px"} style={{ flexDirection: "column" }}>
                 {tab === 0 && <DocumentPage />}
                 {tab === 1 && `Content: ${tabToTitle(tab)}`}
