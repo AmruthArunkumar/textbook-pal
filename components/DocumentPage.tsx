@@ -6,18 +6,21 @@ import AddIcon from "@mui/icons-material/Add";
 import PictureAsPdfIcon from "@mui/icons-material/PictureAsPdf";
 import MoreVertIcon from "@mui/icons-material/MoreVert";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
-import { useEffect, useState } from "react";
-import TabHeader from "@/components/TabHeader";
+import { useEffect, useRef, useState } from "react";
 import { app, auth } from "@/app/firebase/config";
-import { useRouter } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { useCollection } from "react-firebase-hooks/firestore";
-import { getFirestore, collection, getDocs, doc, getDoc, addDoc, deleteDoc, DocumentData } from "firebase/firestore";
-import { showNotification } from "@mantine/notifications";
+import { getFirestore, collection, getDocs, doc, deleteDoc, addDoc, writeBatch } from "firebase/firestore";
+import { showNotification, updateNotification } from "@mantine/notifications";
+import { parsePDF } from "@/app/api/parser";
+import { SentenceSplitter } from "@llamaindex/core/node-parser";
+import { deflateSync, inflateSync } from "zlib";
+import { GoogleGenAI } from "@google/genai";
+import KNN from "@/app/api/compare";
 
 interface Note {
     id: string;
     embedding: number[];
+    name: string;
     compressedText: string;
 }
 
@@ -26,27 +29,97 @@ export default function DocumentPage() {
     const db = getFirestore(app);
 
     const [file, setFile] = useState<File | null>(null);
-    const [notes, setNotes] = useState<{ id: string; text: string }[]>([]);
+    const resetRef = useRef<() => void>(null);
+    const [notes, setNotes] = useState<{ ids: string[]; name: string }[]>([]);
 
     useEffect(() => {
         handleGetAllDocuments();
     }, [user]);
 
+    const clearFile = () => {
+        setFile(null);
+        resetRef.current?.();
+    };
+
     const handleAddDocument = async () => {
+        showNotification({
+            id: "add-doc",
+            title: "Uploading...",
+            message: "Your document is being parsed and uploaded",
+            loading: true,
+            autoClose: false,
+            withCloseButton: false,
+            radius: "xs",
+            style: {
+                maxWidth: "max(40vw, 300px)",
+                marginLeft: "auto",
+                marginRight: "auto",
+            },
+        });
         if (!user) return;
         const notesRef = collection(db, "Users", user.uid, "Notes");
         try {
-            const docRef = await addDoc(notesRef, { compressedText: file?.name ?? "N/A", embedding: [1, 2, 3] });
-            console.log("Document written with ID: ", docRef.id);
-            setNotes([...notes, { text: file?.name ?? "N/A", id: docRef.id }]);
-            setFile(null);
-            showNotification({
+            // Parsing
+            const docs: {
+                id: string;
+                text: string;
+            }[] = await parsePDF(file!);
+            let content = "";
+            docs.map((d) => (content += d.text + "\n"));
+
+            // Chunking
+            const splitter = new SentenceSplitter({
+                chunkSize: 400,
+                chunkOverlap: 50,
+            });
+            const output = splitter.splitText(content);
+
+            // Compression
+            let compressed = output.map((c) => deflateSync(c).toString("base64"));
+            console.log(output.map((o, i) => ((compressed[i].length / o.length) * 100).toFixed(1).toString() + "%"));
+
+            // Embedding
+            const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
+            const response = await ai.models.embedContent({
+                model: "gemini-embedding-001",
+                contents: output,
+                config: {
+                    outputDimensionality: 1024,
+                },
+            });
+            console.log(response.embeddings);
+            const embeddings = response.embeddings;
+
+            // Storing in DB
+            const batch = writeBatch(db);
+            let ids: string[] = [];
+
+            compressed.forEach((c, i) => {
+                const newDocRef = doc(notesRef);
+                batch.set(newDocRef, {
+                    name: file?.name.replace(/\.pdf$/i, "") ?? "N/A",
+                    compressedText: c,
+                    embedding: embeddings![i].values,
+                });
+                ids.push(newDocRef.id);
+            });
+
+            await batch.commit();
+            console.log("Document written with ID: ", ids);
+            setNotes([...notes, { name: file?.name ?? "N/A", ids: ids }]);
+            clearFile();
+
+            updateNotification({
+                id: "add-doc",
                 title: "Success!",
                 message: "Document Saved Successfully",
                 color: "green",
                 radius: "xs",
+                loading: false,
+                autoClose: true,
+                withCloseButton: true,
                 style: {
-                    maxWidth: "40vw",
+                    maxWidth: "max(40vw, 300px)",
                     marginLeft: "auto",
                     marginRight: "auto",
                 },
@@ -54,13 +127,17 @@ export default function DocumentPage() {
             });
         } catch (e) {
             console.error("Error adding document: ", e);
-            showNotification({
+            updateNotification({
+                id: "add-doc",
                 title: "Uh Oh!",
                 message: "Error Adding Document",
                 color: "red",
                 radius: "xs",
+                loading: false,
+                autoClose: true,
+                withCloseButton: true,
                 style: {
-                    maxWidth: "40vw",
+                    maxWidth: "max(40vw, 300px)",
                     marginLeft: "auto",
                     marginRight: "auto",
                 },
@@ -69,14 +146,22 @@ export default function DocumentPage() {
         }
     };
 
-    const handleDeleteDocument = async (id: string) => {
+    const handleDeleteDocument = async (name: string, ids: string[]) => {
         if (!user) return;
-        console.log(id)
-        const notesDoc = doc(db, "Users", user.uid, "Notes", id);
+        const notesDoc = collection(db, "Users", user.uid, "Notes");
         try {
-            const docRef = await deleteDoc(notesDoc);
+            const batch = writeBatch(db);
+
+            ids.forEach((id) => {
+                const d = doc(notesDoc, id);
+                batch.delete(d);
+            });
+
+            await batch.commit();
+
+            // const docRef = await deleteDoc(notesDoc);
             console.log("Document deleted");
-            setNotes((prevNotes) => prevNotes.filter((note) => note.id !== id));
+            setNotes((prevNotes) => prevNotes.filter((note) => note.name !== name));
             showNotification({
                 title: "Success!",
                 message: "Document Removed Successfully",
@@ -110,13 +195,22 @@ export default function DocumentPage() {
         if (!user) return;
         const notesRef = collection(db, "Users", user.uid, "Notes");
         const snapshot = await getDocs(notesRef);
-        const allNotes: { id: string; text: string }[] = [];
+        let noteNames: Set<string> = new Set([]);
+        let allNotes: { ids: string[]; name: string }[] = [];
         snapshot.forEach((doc) => {
             const data: Note = doc.data() as Note;
-            allNotes.push({ text: data.compressedText, id: doc.id });
+            if (noteNames.has(data.name)) {
+                allNotes.forEach((n) => {
+                    if (n.name === data.name) {
+                        n.ids.push(doc.id);
+                    }
+                });
+            } else {
+                allNotes.push({ name: data.name, ids: [doc.id] });
+                noteNames.add(data.name);
+            }
         });
-        console.log(allNotes)
-        setNotes(allNotes);
+        setNotes([...allNotes]);
     };
 
     return (
@@ -131,9 +225,6 @@ export default function DocumentPage() {
                     <Text size="md" ta="center" flex={1}>
                         Picked file: {file.name}
                     </Text>
-                    <ActionIcon radius={"sm"} size="xl" color="pale-green" hiddenFrom="sm" onClick={handleAddDocument}>
-                        <UploadFileIcon />
-                    </ActionIcon>
                     <Button
                         rightSection={<UploadFileIcon />}
                         radius={"sm"}
@@ -147,34 +238,36 @@ export default function DocumentPage() {
                 </Group>
             )}
             <SimpleGrid cols={{ base: 1, xs: 2, sm: 3, md: 4, lg: 5, xl: 6 }} spacing="md" style={{ width: "100%" }}>
-                {notes.map((n, i) => {
-                    return (
-                        <Paper withBorder shadow="sm" radius="md" p="16px" key={i} display={"flex"}>
-                            <PictureAsPdfIcon sx={{ color: "#E57373", mr: "16px" }} />
-                            <Text flex={1} truncate="end">
-                                {n.text.replace(/\.pdf$/i, "")}
-                            </Text>
-                            <Menu shadow="md" width={200}>
-                                <Menu.Target>
-                                    <ActionIcon variant="subtle" color="gray">
-                                        <MoreVertIcon />
-                                    </ActionIcon>
-                                </Menu.Target>
+                {notes
+                    .sort((a, b) => a.name.localeCompare(b.name))
+                    .map((n, i) => {
+                        return (
+                            <Paper withBorder shadow="sm" radius="md" p="16px" key={i} display={"flex"}>
+                                <PictureAsPdfIcon sx={{ color: "#E57373", mr: "16px" }} />
+                                <Text flex={1} truncate="end">
+                                    {n.name}
+                                </Text>
+                                <Menu shadow="md" width={200}>
+                                    <Menu.Target>
+                                        <ActionIcon variant="subtle" color="gray">
+                                            <MoreVertIcon />
+                                        </ActionIcon>
+                                    </Menu.Target>
 
-                                <Menu.Dropdown>
-                                    <Menu.Item
-                                        color="red"
-                                        onClick={() => {
-                                            handleDeleteDocument(n.id);
-                                        }}
-                                    >
-                                        Delete
-                                    </Menu.Item>
-                                </Menu.Dropdown>
-                            </Menu>
-                        </Paper>
-                    );
-                })}
+                                    <Menu.Dropdown>
+                                        <Menu.Item
+                                            color="red"
+                                            onClick={() => {
+                                                handleDeleteDocument(n.name, n.ids);
+                                            }}
+                                        >
+                                            Delete
+                                        </Menu.Item>
+                                    </Menu.Dropdown>
+                                </Menu>
+                            </Paper>
+                        );
+                    })}
             </SimpleGrid>
             <FileButton onChange={setFile} accept="application/pdf">
                 {(props) => (
@@ -185,7 +278,6 @@ export default function DocumentPage() {
                     </Affix>
                 )}
             </FileButton>
-            <Box display={"flex"} style={{ flexDirection: "row", gap: "16px" }}></Box>
         </Box>
     );
 }

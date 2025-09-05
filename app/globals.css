@@ -1,8 +1,16 @@
-@import "tailwindcss";
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+    --color-background: var(--background);
+    --color-foreground: var(--foreground);
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+}
+
+hr {
+    display: block;
+    width: 100%;
+    max-width: 100%;
+    border: none;
+    border-top: 1px solid;
+    margin: 1rem 0;
+    box-sizing: border-box;
 }

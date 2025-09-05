@@ -11,17 +11,26 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
+    "@google-cloud/firestore": "^7.11.3",
+    "@google/genai": "^1.16.0",
+    "@langchain/community": "^0.3.54",
+    "@langchain/core": "^0.3.73",
+    "@llamaindex/readers": "^3.1.19",
     "@mantine/core": "^8.2.3",
     "@mantine/hooks": "^8.2.3",
     "@mantine/notifications": "^8.2.4",
     "@mui/icons-material": "^7.3.1",
     "@mui/material": "^7.3.1",
+    "compute-cosine-similarity": "^1.1.0",
     "firebase": "^12.0.0",
     "framer-motion": "^12.23.12",
+    "langchain": "^0.3.32",
+    "llama-cloud-services": "^0.3.3",
     "next": "15.4.4",
     "react": "19.1.0",
     "react-dom": "19.1.0",
-    "react-firebase-hooks": "^5.1.1"
+    "react-firebase-hooks": "^5.1.1",
+    "react-markdown": "^10.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
