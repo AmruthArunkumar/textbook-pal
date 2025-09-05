@@ -85,7 +85,6 @@ export default function ChatbotPage() {
                     radius={"xs"}
                     size="md"
                     color="pale-green"
-                    visibleFrom="sm"
                     onClick={async () => {
                         await handleQuery(query);
                         setQuery("");
