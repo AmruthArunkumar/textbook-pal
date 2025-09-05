@@ -1,4 +1,4 @@
-var similarity = require("compute-cosine-similarity");
+import similarity from "compute-cosine-similarity";
 
 interface Note {
     id: string;
@@ -8,7 +8,7 @@ interface Note {
 }
 
 function compare(emb1: number[], emb2: number[]): number {
-    return similarity(emb1, emb2);
+    return similarity(emb1, emb2)!;
 }
 
 export default function KNN(col: Note[], query: number[], k: number) {
