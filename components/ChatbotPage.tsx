@@ -130,17 +130,17 @@ export default function ChatbotPage() {
         const queryembd = queryresponse.embeddings![0].values!;
 
         const snapshot = await getDocs(notesRef);
-        let embds: Note[] = [];
+        const embds: Note[] = [];
         snapshot.forEach((doc) => {
             embds.push(doc.data() as Note);
         });
         console.log(embds);
-        let top5 = KNN(embds, queryembd, 5);
+        const top5 = KNN(embds, queryembd, 5);
 
-        let decompressed = top5.map((c) => inflateSync(Buffer.from(c.compressedText, "base64")).toString());
+        const decompressed = top5.map((c) => inflateSync(Buffer.from(c.compressedText, "base64")).toString());
         console.log(decompressed);
 
-        let context = "Context:\n\n" + decompressed.join("\n\n");
+        const context = "Context:\n\n" + decompressed.join("\n\n");
         query += "\n\n" + context;
 
         const response = await ai.models.generateContent({

@@ -75,7 +75,7 @@ export default function DocumentPage() {
             const output = splitter.splitText(content);
 
             // Compression
-            let compressed = output.map((c) => deflateSync(c).toString("base64"));
+            const compressed = output.map((c) => deflateSync(c).toString("base64"));
             console.log(output.map((o, i) => ((compressed[i].length / o.length) * 100).toFixed(1).toString() + "%"));
 
             // Embedding
@@ -92,7 +92,7 @@ export default function DocumentPage() {
 
             // Storing in DB
             const batch = writeBatch(db);
-            let ids: string[] = [];
+            const ids: string[] = [];
 
             compressed.forEach((c, i) => {
                 const newDocRef = doc(notesRef);
@@ -195,8 +195,8 @@ export default function DocumentPage() {
         if (!user) return;
         const notesRef = collection(db, "Users", user.uid, "Notes");
         const snapshot = await getDocs(notesRef);
-        let noteNames: Set<string> = new Set([]);
-        let allNotes: { ids: string[]; name: string }[] = [];
+        const noteNames: Set<string> = new Set([]);
+        const allNotes: { ids: string[]; name: string }[] = [];
         snapshot.forEach((doc) => {
             const data: Note = doc.data() as Note;
             if (noteNames.has(data.name)) {
