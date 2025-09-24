@@ -92,13 +92,13 @@ export default function StudyToolPage() {
     const parseQuestions = (questions: string) => {
         if (questions == "") return;
         const qarray: Question[] = [];
-        let lines: string[] = questions.split("\n\n");
+        const lines: string[] = questions.split("\n\n");
         let currentHeading = "";
         lines.forEach((line) => {
             if (line.startsWith("#")) {
                 currentHeading = line.replace(/^#+|#+$/g, "").trim();
             } else {
-                let q = line.split("[QUESTION START]")[1].split("[QUESTION END]")[0];
+                const q = line.split("[QUESTION START]")[1].split("[QUESTION END]")[0];
                 qarray.push({
                     q: q.split("A)")[0].trim(),
                     a: q.split("A)")[1].split("B)")[0].trim(),
