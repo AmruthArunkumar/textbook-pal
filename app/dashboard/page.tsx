@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useAuthState } from "react-firebase-hooks/auth";
 import DocumentPage from "@/components/DocumentPage";
 import ChatbotPage from "@/components/ChatbotPage";
+import StudyToolPage from "@/components/StudyToolPage";
 
 export default function Dashboard() {
     const [tab, setTab] = useState<number>(0);
@@ -51,7 +52,7 @@ export default function Dashboard() {
             <Box flex={1} display={"flex"} m={"8px"} style={{ flexDirection: "column" }}>
                 {tab === 0 && <DocumentPage />}
                 {tab === 1 && <ChatbotPage />}
-                {tab === 2 && `Content: ${tabToTitle(tab)}`}
+                {tab === 2 && <StudyToolPage />}
             </Box>
         </Box>
     );

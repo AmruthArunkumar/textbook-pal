@@ -22,6 +22,7 @@ interface Note {
     embedding: number[];
     name: string;
     compressedText: string;
+    position: number;
 }
 
 export default function DocumentPage() {
@@ -61,16 +62,17 @@ export default function DocumentPage() {
         try {
             // Parsing
             const docs: {
-                id: string;
+                id: string | undefined;
                 text: string;
             }[] = await parsePDF(file!);
             let content = "";
             docs.map((d) => (content += d.text + "\n"));
+            console.log(content)
 
             // Chunking
             const splitter = new SentenceSplitter({
                 chunkSize: 400,
-                chunkOverlap: 50,
+                chunkOverlap: 0,
             });
             const output = splitter.splitText(content);
 
@@ -100,6 +102,7 @@ export default function DocumentPage() {
                     name: file?.name.replace(/\.pdf$/i, "") ?? "N/A",
                     compressedText: c,
                     embedding: embeddings![i].values,
+                    position: i
                 });
                 ids.push(newDocRef.id);
             });
@@ -211,6 +214,7 @@ export default function DocumentPage() {
             }
         });
         setNotes([...allNotes]);
+        console.log(allNotes)
     };
 
     return (

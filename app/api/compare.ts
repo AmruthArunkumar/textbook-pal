@@ -5,6 +5,7 @@ interface Note {
     embedding: number[];
     name: string;
     compressedText: string;
+    position: number;
 }
 
 function compare(emb1: number[], emb2: number[]): number {

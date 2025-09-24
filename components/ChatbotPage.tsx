@@ -2,6 +2,8 @@
 import { Box, Button, Group, Input, ScrollArea } from "@mantine/core";
 import SendIcon from "@mui/icons-material/Send";
 import UploadFileIcon from "@mui/icons-material/UploadFile";
+import CloseIcon from "@mui/icons-material/Close";
+import CheckIcon from "@mui/icons-material/CheckCircle";
 import { useState } from "react";
 import { app, auth } from "@/app/firebase/config";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -10,12 +12,14 @@ import { inflateSync } from "zlib";
 import { GoogleGenAI } from "@google/genai";
 import KNN from "@/app/api/compare";
 import ReactMarkdown from "react-markdown";
+import { showNotification, updateNotification } from "@mantine/notifications";
 
 interface Note {
     id: string;
     embedding: number[];
     name: string;
     compressedText: string;
+    position: number;
 }
 
 export default function ChatbotPage() {
@@ -28,50 +32,91 @@ export default function ChatbotPage() {
     const ai = new GoogleGenAI({ apiKey: process.env.NEXT_PUBLIC_GEMINI_API_KEY });
 
     const handleQuery = async (query: string) => {
-        if (!user) return;
-        const notesRef = collection(db, "Users", user.uid, "Notes");
-
-        const queryresponse = await ai.models.embedContent({
-            model: "gemini-embedding-001",
-            contents: query,
-            config: {
-                outputDimensionality: 1024,
+        showNotification({
+            id: "handle-query",
+            title: "Sending...",
+            message: "Your answer is being generated",
+            loading: true,
+            autoClose: false,
+            withCloseButton: false,
+            radius: "xs",
+            style: {
+                maxWidth: "max(40vw, 300px)",
+                marginLeft: "auto",
+                marginRight: "auto",
             },
         });
-        const queryembd = queryresponse.embeddings![0].values!;
+        if (!user) return;
+        const notesRef = collection(db, "Users", user.uid, "Notes");
+        try {
+            const queryresponse = await ai.models.embedContent({
+                model: "gemini-embedding-001",
+                contents: query,
+                config: {
+                    outputDimensionality: 1024,
+                },
+            });
+            const queryembd = queryresponse.embeddings![0].values!;
 
-        const snapshot = await getDocs(notesRef);
-        const embds: Note[] = [];
-        snapshot.forEach((doc) => {
-            embds.push(doc.data() as Note);
-        });
-        console.log(embds);
-        const top5 = KNN(embds, queryembd, 5);
+            const snapshot = await getDocs(notesRef);
+            const embds: Note[] = [];
+            snapshot.forEach((doc) => {
+                embds.push(doc.data() as Note);
+            });
+            const top5 = KNN(embds, queryembd, 5);
 
-        const decompressed = top5.map((c) => inflateSync(Buffer.from(c.compressedText, "base64")).toString());
-        console.log(decompressed);
+            const decompressed = top5.map((c) => inflateSync(Buffer.from(c.compressedText, "base64")).toString());
 
-        const context = "Context:\n\n" + decompressed.join("\n\n");
-        query += "\n\n" + context;
+            const context = "Extra Context:\n\n" + decompressed.join("\n\n");
+            query += "\n\n" + context;
 
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash",
-            contents: query,
-        });
+            const response = await ai.models.generateContent({
+                model: "gemini-2.5-flash",
+                contents: query,
+            });
 
-        console.log(response.text);
-        setAnswer(response.text ?? "Nothing Received");
+            setAnswer(response.text ?? "Nothing Received");
+
+            updateNotification({
+                id: "handle-query",
+                title: "Success!",
+                message: "Answer Generated Successfully",
+                color: "green",
+                radius: "xs",
+                loading: false,
+                autoClose: true,
+                withCloseButton: true,
+                style: {
+                    maxWidth: "max(40vw, 300px)",
+                    marginLeft: "auto",
+                    marginRight: "auto",
+                },
+                icon: <CheckIcon />,
+            });
+        } catch (e) {
+            console.error("Error adding document: ", e);
+            updateNotification({
+                id: "handle-query",
+                title: "Uh Oh!",
+                message: "Error Generating Answer",
+                color: "red",
+                radius: "xs",
+                loading: false,
+                autoClose: true,
+                withCloseButton: true,
+                style: {
+                    maxWidth: "max(40vw, 300px)",
+                    marginLeft: "auto",
+                    marginRight: "auto",
+                },
+                icon: <CloseIcon />,
+            });
+        }
     };
 
     return (
         <Box display={"flex"} style={{ flexDirection: "column" }}>
-            <Group
-                display={"flex"}
-                justify="flex-start"
-                h={60}
-                pb={"8px"}
-                // style={{ borderBottom: "2px solid light-dark(#DDDDDD, #444444)" }}
-            >
+            <Group display={"flex"} justify="flex-start" h={60} pb={"8px"}>
                 <Input
                     radius="xs"
                     size="md"
@@ -104,6 +149,7 @@ export default function ChatbotPage() {
                 overscrollBehavior="none"
                 scrollbarSize={8}
                 scrollHideDelay={500}
+                offsetScrollbars
             >
                 <ReactMarkdown>{answer}</ReactMarkdown>
             </ScrollArea>
