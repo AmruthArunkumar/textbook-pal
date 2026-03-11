@@ -67,7 +67,6 @@ export default function DocumentPage() {
             }[] = await parsePDF(file!);
             let content = "";
             docs.map((d) => (content += d.text + "\n"));
-            console.log(content)
 
             // Chunking
             const splitter = new SentenceSplitter({
@@ -75,6 +74,8 @@ export default function DocumentPage() {
                 chunkOverlap: 0,
             });
             const output = splitter.splitText(content);
+
+            if (output.length >= 50) throw "too big";
 
             // Compression
             const compressed = output.map((c) => deflateSync(c).toString("base64"));

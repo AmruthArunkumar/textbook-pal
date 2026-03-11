@@ -94,22 +94,26 @@ export default function StudyToolPage() {
         const qarray: Question[] = [];
         const lines: string[] = questions.split("\n\n");
         let currentHeading = "";
-        lines.forEach((line) => {
-            if (line.startsWith("#")) {
-                currentHeading = line.replace(/^#+|#+$/g, "").trim();
-            } else {
-                const q = line.split("[QUESTION START]")[1].split("[QUESTION END]")[0];
-                qarray.push({
-                    q: q.split("A)")[0].trim(),
-                    a: q.split("A)")[1].split("B)")[0].trim(),
-                    b: q.split("B)")[1].split("C)")[0].trim(),
-                    c: q.split("C)")[1].split("D)")[0].trim(),
-                    d: q.split("D)")[1].split("Correct Answer)")[0].trim(),
-                    ans: q.split("Correct Answer)")[1].split("Explanation)")[0].trim(),
-                    exp: q.split("Explanation)")[1].trim(),
-                } as Question);
-            }
-        });
+        try {
+            lines.forEach((line) => {
+                if (line.startsWith("#")) {
+                    currentHeading = line.replace(/^#+|#+$/g, "").trim();
+                } else {
+                    const q = line.split("[QUESTION START]")[1].split("[QUESTION END]")[0];
+                    qarray.push({
+                        q: q.split("A)")[0].trim(),
+                        a: q.split("A)")[1].split("B)")[0].trim(),
+                        b: q.split("B)")[1].split("C)")[0].trim(),
+                        c: q.split("C)")[1].split("D)")[0].trim(),
+                        d: q.split("D)")[1].split("Correct Answer)")[0].trim(),
+                        ans: q.split("Correct Answer)")[1].split("Explanation)")[0].trim(),
+                        exp: q.split("Explanation)")[1].trim(),
+                    } as Question);
+                }
+            });
+        } catch (e) {
+            console.error("Unable to parse: ", e);
+        }
         setQuestions(qarray);
     };
 
